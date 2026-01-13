@@ -1,0 +1,511 @@
+{
+  "info": {
+    "name": "Plapofy API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "jwt",
+      "value": ""
+    },
+    {
+      "key": "openaiApiKey",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"superadmin\",\n  \"password\": \"admin123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Register (NASABAH)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"nasabah99\",\n  \"email\": \"nasabah99@mail.com\",\n  \"password\": \"secret123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Reset Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/reset-password",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"nasabah99@mail.com\",\n  \"newPassword\": \"newSecret123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/logout"
+      }
+    },
+    {
+      "name": "Public - Landing",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/public/landing"
+      }
+    },
+    {
+      "name": "Plafonds - List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/plafonds"
+      }
+    },
+    {
+      "name": "Users - List (SUPER_ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users"
+      }
+    },
+    {
+      "name": "Users - Create (SUPER_ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password123\",\n  \"email\": \"newuser@example.com\",\n  \"roles\": [{\"name\": \"USER\"}]\n}"
+        }
+      }
+    },
+    {
+      "name": "Users - Delete (SUPER_ADMIN)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/1"
+      }
+    },
+    {
+      "name": "Roles - List (SUPER_ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/roles"
+      }
+    },
+    {
+      "name": "Roles - Create (SUPER_ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/roles",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"NEW_ROLE\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Roles - Delete (SUPER_ADMIN)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/roles/1"
+      }
+    },
+    {
+      "name": "Roles - Restore (SUPER_ADMIN)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/roles/1/restore"
+      }
+    },
+    {
+      "name": "Permissions - List (SUPER_ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/permissions"
+      }
+    },
+    {
+      "name": "Permissions - Create (SUPER_ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/permissions",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"READ_PRIVILEGE\"\n}"
+        }
+      }
+    },
+    {
+      "name": "RoleMappings - Add Permission (SUPER_ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/role-mappings/roles/1/permissions/1"
+      }
+    },
+    {
+      "name": "RoleMappings - Remove Permission (SUPER_ADMIN)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/role-mappings/role-permissions/1"
+      }
+    },
+    {
+      "name": "RoleMappings - Add Menu (SUPER_ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/role-mappings/roles/1/menus/1"
+      }
+    },
+    {
+      "name": "RoleMappings - Remove Menu (SUPER_ADMIN)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/role-mappings/role-menus/1"
+      }
+    },
+    {
+      "name": "Menus - List (SUPER_ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/menus"
+      }
+    },
+    {
+      "name": "Menus - Create (SUPER_ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/menus",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"label\": \"Dashboard\",\n  \"url\": \"/dashboard\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Customers - List (SUPER_ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/customers"
+      }
+    },
+    {
+      "name": "Customers - Create (SUPER_ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/customers",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Doe\",\n  \"nik\": \"1234567890123456\",\n  \"phone\": \"08123456789\",\n  \"address\": \"Jakarta\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Customers - Delete (SUPER_ADMIN)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/customers/1"
+      }
+    },
+    {
+      "name": "OpenAI - Chat (SUPER_ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/openai/chat",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"Tuliskan ringkasan Plapofy\",\n  \"model\": \"gpt-4o-mini\",\n  \"temperature\": 0.2\n}"
+        }
+      }
+    },
+    {
+      "name": "Loans - Submit (NASABAH)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/loans",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plafondId\": 1,\n  \"amount\": 3000000\n}"
+        }
+      }
+    },
+    {
+      "name": "Loans - Review (MARKETING)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/loans/1/review",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"remarks\": \"Checked documents\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Loans - Approve (BRANCH_MANAGER)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/loans/1/approve",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"remarks\": \"All good\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Loans - Disburse (BACK_OFFICE)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/loans/1/disburse",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": 3000000,\n  \"remarks\": \"Transferred\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Loans - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/loans"
+      }
+    },
+    {
+      "name": "Loans - Detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/loans/1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+SAMPLE KTP DOCUMENT - For Testing Only
+NIK: 1234567890123456
+Nama: Test User
