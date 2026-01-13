@@ -38,16 +38,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (header != null && header.startsWith("Bearer ")) {
       token = header.substring(7);
     }
-    if (token != null && jwtTokenProvider.validate(token)) {
-      String username = jwtTokenProvider.getUsername(token);
-      UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-      List<GrantedAuthority> authorities = jwtTokenProvider.getRoles(token).stream()
-          .map(SimpleGrantedAuthority::new)
-          .collect(Collectors.toList());
-      UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
-          authorities);
-      authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-      SecurityContextHolder.getContext().setAuthentication(authToken);
+
+    if (token != null) {
+      boolean isValid = jwtTokenProvider.validate(token);
+
+      if (isValid) {
+        String username = jwtTokenProvider.getUsername(token);
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        List<GrantedAuthority> authorities = jwtTokenProvider.getRoles(token).stream()
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
+
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+            authorities);
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+      }
     }
     filterChain.doFilter(request, response);
   }
