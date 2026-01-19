@@ -11,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
+import com.finprov.loan.dto.TransitionRequest;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -45,5 +48,33 @@ public class CustomerController {
     customerService.deleteCustomer(id);
     ApiResponse<Object> body = ApiResponse.of(true, "Customer deleted successfully", null);
     return ResponseEntity.ok(body);
+  }
+
+  @PostMapping(value = "/kyc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("hasRole('NASABAH')")
+  @Operation(summary = "Submit KYC", description = "Submit KYC documents (NASABAH)")
+  public ResponseEntity<ApiResponse<Customer>> submitKyc(
+      @RequestPart("ktpImage") MultipartFile ktpImage,
+      @RequestPart("selfieImage") MultipartFile selfieImage,
+      @RequestPart(value = "npwpImage", required = false) MultipartFile npwpImage,
+      @RequestPart(value = "businessLicenseImage", required = false) MultipartFile businessLicenseImage) {
+
+    Customer data = customerService.submitKyc(ktpImage, selfieImage, npwpImage, businessLicenseImage);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(ApiResponse.of(true, "KYC Submitted successfully", data));
+  }
+
+  @PatchMapping("/{id}/verify-kyc")
+  @PreAuthorize("hasAnyRole('BACK_OFFICE', 'SUPER_ADMIN')")
+  @Operation(summary = "Verify KYC", description = "Approve or Reject KYC (BACK_OFFICE)")
+  public ResponseEntity<ApiResponse<Customer>> verifyKyc(
+      @PathVariable Long id,
+      @RequestParam boolean approve,
+      @RequestBody(required = false) TransitionRequest request) {
+
+    String remarks = request != null ? request.getRemarks() : null;
+    Customer data = customerService.verifyKyc(id, approve, remarks);
+    String status = approve ? "Approved" : "Rejected";
+    return ResponseEntity.ok(ApiResponse.of(true, "KYC " + status, data));
   }
 }

@@ -16,4 +16,6 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
   List<Loan> findByBranchIdIn(List<Long> branchIds);
 
   List<Loan> findAllByBranchId(Long branchId);
+
+  boolean existsByApplicantAndCurrentStatusIn(User applicant, List<LoanStatus> statuses);
 }

@@ -14,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
   Long countByUserBranches_Branch_IdAndRoles_Name(Long branchId, String roleName);
 
   java.util.List<User> findByUserBranches_Branch_IdAndDeletedFalse(Long branchId);
+
+  java.util.List<User> findByRoles_Name(String roleName);
 }

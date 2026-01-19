@@ -9,4 +9,12 @@ public interface CustomerService {
   List<Customer> getAllCustomers();
 
   void deleteCustomer(Long id);
+
+  Customer submitKyc(
+      org.springframework.web.multipart.MultipartFile ktp,
+      org.springframework.web.multipart.MultipartFile selfie,
+      org.springframework.web.multipart.MultipartFile npwp,
+      org.springframework.web.multipart.MultipartFile license);
+
+  Customer verifyKyc(Long id, boolean approve, String remarks);
 }

@@ -55,6 +55,10 @@ public class ProfileController {
             customer.setPhoneNumber(request.getPhoneNumber());
         if (request.getAddress() != null)
             customer.setAddress(request.getAddress());
+        if (request.getBankName() != null)
+            customer.setBankName(request.getBankName());
+        if (request.getBankAccountNumber() != null)
+            customer.setBankAccountNumber(request.getBankAccountNumber());
 
         Customer saved = customerRepository.save(customer);
         return ResponseEntity.ok(ApiResponse.of(true, "Profile updated", saved));

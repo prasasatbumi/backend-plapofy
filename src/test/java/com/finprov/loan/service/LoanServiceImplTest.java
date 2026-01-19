@@ -28,6 +28,7 @@ public class LoanServiceImplTest {
   private NotificationRepository notificationRepository;
   private FileStorageService fileStorageService; // Added FileStorageService
   private BranchRepository branchRepository; // Added BranchRepository
+  private CustomerRepository customerRepository; // Added CustomerRepository
   private LoanService loanService;
   private User nasabah;
   private Plafond plaf;
@@ -42,6 +43,7 @@ public class LoanServiceImplTest {
     notificationRepository = mock(NotificationRepository.class);
     fileStorageService = mock(FileStorageService.class); // Mocked FileStorageService
     branchRepository = mock(BranchRepository.class); // Mocked BranchRepository
+    customerRepository = mock(CustomerRepository.class); // Mocked CustomerRepository
     loanService = new LoanServiceImpl(
         loanRepository,
         plafondRepository,
@@ -50,7 +52,8 @@ public class LoanServiceImplTest {
         loanDisbursementRepository,
         notificationRepository,
         fileStorageService,
-        branchRepository);
+        branchRepository,
+        customerRepository);
 
     Role rNasabah = Role.builder().id(1L).name("NASABAH").build();
     nasabah = User.builder().id(10L).username("john").roles(Set.of(rNasabah)).isActive(true).build();

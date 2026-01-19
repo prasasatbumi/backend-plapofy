@@ -12,12 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 public interface LoanService {
   Loan submitLoan(SubmitLoanRequest request);
 
-  Loan submitLoanWithKyc(LoanSubmissionWithKycRequest request,
-      MultipartFile ktp,
-      MultipartFile selfie,
-      MultipartFile npwp,
-      MultipartFile license);
-
   LoanSimulationResponse simulateLoan(LoanSimulationRequest request);
 
   Loan reviewLoan(Long id, TransitionRequest request);

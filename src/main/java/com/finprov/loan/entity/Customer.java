@@ -41,6 +41,20 @@ public class Customer implements Serializable {
 
   private String address;
 
+  @Enumerated(EnumType.STRING)
+  private KycStatus kycStatus;
+
+  private String ktpImagePath;
+  private String selfieImagePath;
+  private String npwpImagePath;
+  private String businessLicenseImagePath;
+
+  @Column(name = "bank_name")
+  private String bankName;
+
+  @Column(name = "bank_account_number")
+  private String bankAccountNumber;
+
   @Builder.Default
   @Column(name = "deleted")
   private Boolean deleted = false;

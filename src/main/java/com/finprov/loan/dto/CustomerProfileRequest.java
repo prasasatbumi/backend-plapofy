@@ -15,4 +15,6 @@ public class CustomerProfileRequest {
     private String nik;
     private String phoneNumber;
     private String address;
+    private String bankName;
+    private String bankAccountNumber;
 }

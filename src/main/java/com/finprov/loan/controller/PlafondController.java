@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/plafonds")
 @RequiredArgsConstructor
 @Tag(name = "Plafond", description = "Endpoints for loan plafond information")
+@lombok.extern.slf4j.Slf4j
 public class PlafondController {
 
   private final com.finprov.loan.service.PlafondService plafondService;
@@ -39,15 +40,15 @@ public class PlafondController {
   @Operation(summary = "Update Plafond", description = "Update loan package details (SUPER_ADMIN)")
   public ResponseEntity<ApiResponse<Plafond>> update(
       @PathVariable Long id, @RequestBody Plafond plafond) {
-    System.out.println("DEBUG: Received UPDATE request for ID: " + id);
-    System.out.println("DEBUG: Payload: " + plafond);
+    log.info("Received UPDATE request for ID: " + id);
+    log.debug("Payload: " + plafond);
     try {
       Plafond data = plafondService.update(id, plafond);
-      System.out.println("DEBUG: Update successful");
+      log.info("Update successful for ID: " + id);
       ApiResponse<Plafond> body = ApiResponse.of(true, "Updated", data);
       return ResponseEntity.ok(body);
     } catch (Exception e) {
-      System.err.println("ERROR: Update failed: " + e.getMessage());
+      log.error("Update failed for ID: " + id, e);
       e.printStackTrace();
       throw e;
     }

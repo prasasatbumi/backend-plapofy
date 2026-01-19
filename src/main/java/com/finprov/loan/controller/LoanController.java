@@ -3,7 +3,7 @@ package com.finprov.loan.controller;
 import com.finprov.loan.dto.ApiResponse;
 import com.finprov.loan.dto.LoanSimulationRequest;
 import com.finprov.loan.dto.LoanSimulationResponse;
-import com.finprov.loan.dto.LoanSubmissionWithKycRequest;
+
 import com.finprov.loan.dto.SubmitLoanRequest;
 import com.finprov.loan.dto.TransitionRequest;
 import com.finprov.loan.entity.Loan;
@@ -13,11 +13,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/loans")
@@ -34,21 +32,6 @@ public class LoanController {
     Loan loan = loanService.submitLoan(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(ApiResponse.of(true, "Loan submitted successfully", loan));
-  }
-
-  @PostMapping(value = "/submit-kyc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @PreAuthorize("hasRole('NASABAH')")
-  @Operation(summary = "Submit Loan with KYC", description = "Submit a new loan application with KYC documents (NASABAH)")
-  public ResponseEntity<ApiResponse<Loan>> submitLoanWithKyc(
-      @RequestPart("data") LoanSubmissionWithKycRequest request,
-      @RequestPart("ktpImage") MultipartFile ktpImage,
-      @RequestPart("selfieImage") MultipartFile selfieImage,
-      @RequestPart(value = "npwpImage", required = false) MultipartFile npwpImage,
-      @RequestPart(value = "businessLicenseImage", required = false) MultipartFile businessLicenseImage) {
-
-    Loan loan = loanService.submitLoanWithKyc(request, ktpImage, selfieImage, npwpImage, businessLicenseImage);
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(ApiResponse.of(true, "Loan with KYC submitted successfully", loan));
   }
 
   @PostMapping("/simulate")

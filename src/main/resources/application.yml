@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:sqlserver://localhost:1433;databaseName=Plapofy;encrypt=false;trustServerCertificate=true
     username: sa
-    password: 123456
+    password: ${SPRING_DATASOURCE_PASSWORD:123456}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
   jpa:
@@ -28,8 +28,8 @@ spring:
 
 security:
   jwt:
-    # base64 secret; for production, use env var
-    secret: c2VjdXJlLWFwcC1kZXZlbG9wbWVudC1zZWNyZXQta2V5LTIwMjU=
+    # base64 secret; use env var in production
+    secret: ${SECURITY_JWT_SECRET:c2VjdXJlLWFwcC1kZXZlbG9wbWVudC1zZWNyZXQta2V5LTIwMjU=}
     expiration-ms: 3600000
 
 openai:

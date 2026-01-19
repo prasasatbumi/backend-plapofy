@@ -47,26 +47,37 @@ public class Loan {
   @Column(nullable = false)
   private Instant createdAt;
 
+  @Column(name = "disbursed_at")
+  private Instant disbursedAt;
+
   @Column(length = 255)
   private String purpose;
 
   @Column(name = "business_type", length = 100)
   private String businessType;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "kyc_status", length = 20)
-  private KycStatus kycStatus;
-
   @Column(name = "ktp_image_path", length = 255)
   private String ktpImagePath;
 
-  @Column(name = "selfie_image_path", length = 255)
-  private String selfieImagePath;
+  @Transient
+  public java.time.LocalDate getNextDueDate() {
+    if (disbursedAt == null) return null;
+    java.time.LocalDate startDate = disbursedAt.atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+    java.time.LocalDate now = java.time.LocalDate.now();
+    // Assuming due date is same day of month as disbursement
+    java.time.LocalDate nextDue = startDate.withMonth(now.getMonthValue());
+    if (nextDue.isBefore(now)) {
+        nextDue = nextDue.plusMonths(1);
+    }
+    return nextDue;
+  }
 
-  @Column(name = "npwp_image_path", length = 255)
-  private String npwpImagePath;
-
-  @Column(name = "business_license_image_path", length = 255)
-  private String businessLicenseImagePath;
-
+  @Transient
+  public Integer getRemainingTenor() {
+      if (disbursedAt == null || tenor == null) return null;
+      java.time.LocalDate startDate = disbursedAt.atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+      java.time.LocalDate now = java.time.LocalDate.now();
+      long monthsPassed = java.time.temporal.ChronoUnit.MONTHS.between(startDate, now);
+      return Math.max(0, tenor - (int) monthsPassed);
+  }
 }

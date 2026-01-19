@@ -26,11 +26,31 @@ public class LoanServiceImpl implements LoanService {
   private final NotificationRepository notificationRepository;
   private final com.finprov.loan.service.FileStorageService fileStorageService;
   private final com.finprov.loan.repository.BranchRepository branchRepository;
+  private final CustomerRepository customerRepository;
+  private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
   @Override
+  @org.springframework.transaction.annotation.Transactional
   public Loan submitLoan(SubmitLoanRequest request) {
     User actor = currentUser();
-    ensureRole(actor, "NASABAH");
+
+    // 1. Validate KYC
+    Customer customer = customerRepository.findByUserId(actor.getId())
+        .orElseThrow(
+            () -> new IllegalArgumentException("Customer profile not found. Please complete your profile first."));
+
+    if (customer.getKycStatus() != KycStatus.VERIFIED) {
+      throw new IllegalStateException("Your account is not verified. Please complete KYC process in your profile.");
+    }
+
+    // 2. Validate Single Active Loan
+    boolean hasActiveLoan = loanRepository.existsByApplicantAndCurrentStatusIn(
+        actor,
+        List.of(LoanStatus.SUBMITTED, LoanStatus.REVIEWED, LoanStatus.APPROVED, LoanStatus.DISBURSED));
+    if (hasActiveLoan) {
+      throw new IllegalStateException("You have an active loan. Please settle it before applying for a new one.");
+    }
+
     Plafond plafond = plafondRepository
         .findById(request.getPlafondId())
         .orElseThrow(() -> new IllegalArgumentException("Plafond not found"));
@@ -81,90 +101,10 @@ public class LoanServiceImpl implements LoanService {
         .build();
     Loan saved = loanRepository.save(loan);
     recordApproval(saved, actor, "NASABAH", LoanStatus.SUBMITTED, "Submitted");
-    return saved;
-  }
 
-  @Override
-  @org.springframework.transaction.annotation.Transactional
-  public Loan submitLoanWithKyc(com.finprov.loan.dto.LoanSubmissionWithKycRequest request,
-      org.springframework.web.multipart.MultipartFile ktp,
-      org.springframework.web.multipart.MultipartFile selfie,
-      org.springframework.web.multipart.MultipartFile npwp,
-      org.springframework.web.multipart.MultipartFile license) {
+    // Publish Event
+    eventPublisher.publishEvent(new com.finprov.loan.event.LoanStatusChangedEvent(this, saved, LoanStatus.SUBMITTED));
 
-    User actor = currentUser();
-    ensureRole(actor, "NASABAH");
-
-    // 1. File Uploads
-    if (ktp == null || ktp.isEmpty())
-      throw new IllegalArgumentException("KTP Image is required");
-    if (selfie == null || selfie.isEmpty())
-      throw new IllegalArgumentException("Selfie with KTP is required");
-
-    String userIdStr = String.valueOf(actor.getId());
-    String ktpPath = fileStorageService.storeFile(ktp, userIdStr, "KTP");
-    String selfiePath = fileStorageService.storeFile(selfie, userIdStr, "SELFIE");
-    String npwpPath = (npwp != null && !npwp.isEmpty()) ? fileStorageService.storeFile(npwp, userIdStr, "NPWP") : null;
-    String licensePath = (license != null && !license.isEmpty())
-        ? fileStorageService.storeFile(license, userIdStr, "LICENSE")
-        : null;
-
-    // 2. Loan Logic (Calculations)
-    Plafond plafond = plafondRepository
-        .findById(request.getRequestedPlafondId())
-        .orElseThrow(() -> new IllegalArgumentException("Plafond not found"));
-
-    // Validate branch
-    if (request.getBranchId() == null) {
-      throw new IllegalArgumentException("Branch is required");
-    }
-    com.finprov.loan.entity.Branch branch = branchRepository
-        .findById(request.getBranchId())
-        .orElseThrow(() -> new IllegalArgumentException("Branch not found"));
-
-    if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("Amount must be positive");
-    }
-    if (request.getAmount().compareTo(plafond.getMaxAmount()) > 0) {
-      throw new IllegalArgumentException("Amount exceeds plafond limit");
-    }
-
-    ProductInterest interest = plafond.getInterests().stream()
-        .filter(i -> i.getTenor().equals(request.getTenorMonth()))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Invalid tenor for this product: " + request.getTenorMonth()));
-
-    BigDecimal rate = interest.getInterestRate();
-    BigDecimal principal = request.getAmount();
-    BigDecimal totalInterestPerTenor = principal.multiply(rate).divide(BigDecimal.valueOf(100), 2,
-        java.math.RoundingMode.HALF_UP);
-    BigDecimal totalPayment = principal.add(totalInterestPerTenor);
-    BigDecimal installment = totalPayment.divide(BigDecimal.valueOf(request.getTenorMonth()), 0,
-        java.math.RoundingMode.HALF_UP);
-
-    // 3. Save Entity
-    Loan loan = Loan.builder()
-        .applicant(actor)
-        .plafond(plafond)
-        .branch(branch)
-        .amount(request.getAmount())
-        .tenor(request.getTenorMonth())
-        .interestRate(rate)
-        .monthlyInstallment(installment)
-        .currentStatus(LoanStatus.SUBMITTED)
-        .createdAt(Instant.now())
-        // New KYC Fields
-        .kycStatus(KycStatus.PENDING)
-        .purpose(request.getPurpose())
-        .businessType(request.getBusinessType())
-        .ktpImagePath(ktpPath)
-        .selfieImagePath(selfiePath)
-        .npwpImagePath(npwpPath)
-        .businessLicenseImagePath(licensePath)
-        .build();
-
-    Loan saved = loanRepository.save(loan);
-    recordApproval(saved, actor, "NASABAH", LoanStatus.SUBMITTED, "Submitted with KYC");
     return saved;
   }
 
@@ -222,7 +162,7 @@ public class LoanServiceImpl implements LoanService {
   @Override
   public Loan reviewLoan(Long id, TransitionRequest request) {
     User actor = currentUser();
-    ensureRole(actor, "MARKETING");
+
     Loan loan = loanRepository
         .findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Loan not found"));
@@ -242,13 +182,17 @@ public class LoanServiceImpl implements LoanService {
         "MARKETING",
         LoanStatus.REVIEWED,
         request != null ? request.getRemarks() : null);
+
+    // Publish Event
+    eventPublisher.publishEvent(new com.finprov.loan.event.LoanStatusChangedEvent(this, saved, LoanStatus.REVIEWED));
+
     return saved;
   }
 
   @Override
   public Loan approveLoan(Long id, TransitionRequest request) {
     User actor = currentUser();
-    ensureRole(actor, "BRANCH_MANAGER");
+
     Loan loan = loanRepository
         .findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Loan not found"));
@@ -268,14 +212,17 @@ public class LoanServiceImpl implements LoanService {
         "BRANCH_MANAGER",
         LoanStatus.APPROVED,
         request != null ? request.getRemarks() : null);
-    notify(saved.getApplicant(), "LOAN_APPROVED", "Loan " + saved.getId() + " approved");
+    
+    // Publish Event
+    eventPublisher.publishEvent(new com.finprov.loan.event.LoanStatusChangedEvent(this, saved, LoanStatus.APPROVED));
+
     return saved;
   }
 
   @Override
   public Loan disburseLoan(Long id, TransitionRequest request) {
     User actor = currentUser();
-    ensureRole(actor, "BACK_OFFICE");
+
     Loan loan = loanRepository
         .findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Loan not found"));
@@ -298,6 +245,7 @@ public class LoanServiceImpl implements LoanService {
         .build();
     loanDisbursementRepository.save(disb);
     loan.setCurrentStatus(LoanStatus.DISBURSED);
+    loan.setDisbursedAt(Instant.now());
     Loan saved = loanRepository.save(loan);
     recordApproval(
         saved,
@@ -305,7 +253,10 @@ public class LoanServiceImpl implements LoanService {
         "BACK_OFFICE",
         LoanStatus.DISBURSED,
         request != null ? request.getRemarks() : null);
-    notify(saved.getApplicant(), "LOAN_DISBURSED", "Loan " + saved.getId() + " disbursed");
+    
+    // Publish Event
+    eventPublisher.publishEvent(new com.finprov.loan.event.LoanStatusChangedEvent(this, saved, LoanStatus.DISBURSED));
+    
     return saved;
   }
 
@@ -336,7 +287,10 @@ public class LoanServiceImpl implements LoanService {
     loan.setCurrentStatus(LoanStatus.REJECTED);
     Loan saved = loanRepository.save(loan);
     recordApproval(saved, actor, role, LoanStatus.REJECTED, request != null ? request.getRemarks() : "Rejected");
-    notify(saved.getApplicant(), "LOAN_REJECTED", "Loan " + saved.getId() + " has been rejected");
+    
+    // Publish Event
+    eventPublisher.publishEvent(new com.finprov.loan.event.LoanStatusChangedEvent(this, saved, LoanStatus.REJECTED));
+    
     return saved;
   }
 
@@ -411,29 +365,12 @@ public class LoanServiceImpl implements LoanService {
     loanApprovalRepository.save(log);
   }
 
-  private void notify(User user, String type, String message) {
-    Notification notif = Notification.builder()
-        .user(user)
-        .type(type)
-        .message(message)
-        .createdAt(Instant.now())
-        .read(false)
-        .build();
-    notificationRepository.save(notif);
-  }
-
   private User currentUser() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     String username = auth.getName();
     return userRepository
         .findByUsername(username)
         .orElseThrow(() -> new IllegalArgumentException("User not found"));
-  }
-
-  private void ensureRole(User user, String requiredRole) {
-    if (!hasRole(user, requiredRole)) {
-      throw new IllegalArgumentException("Forbidden: requires role " + requiredRole);
-    }
   }
 
   private boolean hasRole(User user, String role) {
