@@ -5,7 +5,9 @@ import com.finprov.loan.entity.User;
 import com.finprov.loan.repository.NotificationRepository;
 import com.finprov.loan.repository.UserRepository;
 import com.finprov.loan.service.NotificationService;
+import com.finprov.loan.dto.NotificationResponse;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -24,9 +26,18 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<Notification> getNotificationsForCurrentUser() {
+    public List<NotificationResponse> getNotificationsForCurrentUser() {
         User user = currentUser();
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(n -> NotificationResponse.builder()
+                        .id(n.getId())
+                        .type(n.getType())
+                        .message(n.getMessage())
+                        .createdAt(n.getCreatedAt())
+                        .read(n.isRead())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Override

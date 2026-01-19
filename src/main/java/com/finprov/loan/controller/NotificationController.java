@@ -1,6 +1,7 @@
 package com.finprov.loan.controller;
 
 import com.finprov.loan.dto.ApiResponse;
+import com.finprov.loan.dto.NotificationResponse;
 import com.finprov.loan.entity.Notification;
 import com.finprov.loan.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,8 +22,8 @@ public class NotificationController {
 
     @GetMapping
     @Operation(summary = "List Notifications", description = "Get all notifications for the current user")
-    public ResponseEntity<ApiResponse<List<Notification>>> list() {
-        List<Notification> data = notificationService.getNotificationsForCurrentUser();
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> list() {
+        List<NotificationResponse> data = notificationService.getNotificationsForCurrentUser();
         return ResponseEntity.ok(ApiResponse.of(true, "Success", data));
     }
 

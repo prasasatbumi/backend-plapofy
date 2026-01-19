@@ -15,6 +15,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -29,6 +30,7 @@ public class LoanServiceImplTest {
   private FileStorageService fileStorageService; // Added FileStorageService
   private BranchRepository branchRepository; // Added BranchRepository
   private CustomerRepository customerRepository; // Added CustomerRepository
+  private ApplicationEventPublisher eventPublisher;
   private LoanService loanService;
   private User nasabah;
   private Plafond plaf;
@@ -44,6 +46,7 @@ public class LoanServiceImplTest {
     fileStorageService = mock(FileStorageService.class); // Mocked FileStorageService
     branchRepository = mock(BranchRepository.class); // Mocked BranchRepository
     customerRepository = mock(CustomerRepository.class); // Mocked CustomerRepository
+    eventPublisher = mock(ApplicationEventPublisher.class);
     loanService = new LoanServiceImpl(
         loanRepository,
         plafondRepository,
@@ -53,7 +56,8 @@ public class LoanServiceImplTest {
         notificationRepository,
         fileStorageService,
         branchRepository,
-        customerRepository);
+        customerRepository,
+        eventPublisher);
 
     Role rNasabah = Role.builder().id(1L).name("NASABAH").build();
     nasabah = User.builder().id(10L).username("john").roles(Set.of(rNasabah)).isActive(true).build();
